@@ -8,6 +8,7 @@ using System;
 using System.ComponentModel.Design;
 using System.Globalization;
 using System.IO;
+using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 
@@ -33,6 +34,7 @@ namespace ForceProjectCleaner
         /// </summary>
         private readonly Package package;
 
+        private OutputWindow _outputWindow;
         /// <summary>
         /// Initializes a new instance of the <see cref="ForceCleanSolutionCommand"/> class.
         /// Adds our command handlers for menu (commands must exist in the command table file)
@@ -94,29 +96,61 @@ namespace ForceProjectCleaner
         /// <param name="e">Event args.</param>
         private void MenuItemCallback(object sender, EventArgs e)
         {
-            var dte = (EnvDTE.DTE)Package.GetGlobalService(typeof(EnvDTE.DTE));
-            var solution = dte.Solution;
-            for (int i = 0; i < solution.Projects.Count; i++)
+            try
             {
-                var project = solution.Projects.Item(i + 1);
-                var projectFile = new FileInfo(project.FullName);
-                var projectDirectory = projectFile.Directory;
-                // ReSharper disable once PossibleNullReferenceException
-                ForceDeleteDirectory(Path.Combine(projectDirectory.FullName, "bin"));
-                ForceDeleteDirectory(Path.Combine(projectDirectory.FullName, "obj"));
+                var dte = (EnvDTE.DTE)Package.GetGlobalService(typeof(EnvDTE.DTE));
+                var solution = dte.Solution;
+                for (int i = 0; i < solution.Projects.Count; i++)
+                {
+                    var project = solution.Projects.Item(i + 1);
+                    WriteLog($"Project Name:{project.Name} FullName:{project.FullName}");
+                    if (!string.IsNullOrWhiteSpace(project.FullName))
+                    {
+                        var projectFile = new FileInfo(project.FullName);
+                        var projectDirectory = projectFile.Directory;
+                        // ReSharper disable once PossibleNullReferenceException
+                        ForceDeleteDirectory(Path.Combine(projectDirectory.FullName, "bin"));
+                        ForceDeleteDirectory(Path.Combine(projectDirectory.FullName, "obj"));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteLog(ex);
             }
         }
 
         private void ForceDeleteDirectory(string path)
         {
+            if (!Directory.Exists(path))
+                return;
+
             try
             {
+                WriteLog($"Delete {path}");
                 Directory.Delete(path, true);
             }
-            catch
+            catch (Exception ex)
             {
-                // TODO : 
+                WriteLog(ex);
             }
+        }
+
+        private void WriteLog(Exception e)
+        {
+            WriteLog($"Exception:{e.GetType().FullName} Message:{e.Message} StackTrace:{e.StackTrace}");
+        }
+
+        private void WriteLog(string message)
+        {
+            if (_outputWindow == null)
+            {
+                var dte = (EnvDTE.DTE)Package.GetGlobalService(typeof(EnvDTE.DTE));
+                Window window = dte.Windows.Item(EnvDTE.Constants.vsWindowKindOutput);
+                _outputWindow = (OutputWindow)window.Object;
+            }
+            _outputWindow.ActivePane.Activate();
+            _outputWindow.ActivePane.OutputString($"ForceProjectCleaner {message}{Environment.NewLine}");
         }
     }
 }

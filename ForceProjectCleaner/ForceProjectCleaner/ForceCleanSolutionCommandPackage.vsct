@@ -55,7 +55,7 @@
       <Button guid="guidForceCleanSolutionCommandPackageCmdSet" id="ForceCleanSolutionCommandId" priority="0x0010" type="Button">
         <Parent guid="guidForceCleanSolutionCommandPackageCmdSet" id="MyMenuGroup" />
         <Strings>
-          <ButtonText>Force clean solution</ButtonText>
+          <ButtonText>Force Clean Solution</ButtonText>
         </Strings>
       </Button>
     </Buttons>
