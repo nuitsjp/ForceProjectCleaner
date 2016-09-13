@@ -37,7 +37,7 @@
          must be a menu. -->
     <Groups>
       <Group guid="guidForceCleanSolutionCommandPackageCmdSet" id="MyMenuGroup" priority="0x0600">
-        <Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_TOOLS"/>
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_BUILD"/>
       </Group>
     </Groups>
 
@@ -52,11 +52,10 @@
               <CommandFlag>DefaultInvisible</CommandFlag>
               <CommandFlag>DynamicVisibility</CommandFlag>
           If you do not want an image next to your command, remove the Icon node /> -->
-      <Button guid="guidForceCleanSolutionCommandPackageCmdSet" id="ForceCleanSolutionCommandId" priority="0x0100" type="Button">
+      <Button guid="guidForceCleanSolutionCommandPackageCmdSet" id="ForceCleanSolutionCommandId" priority="0x0010" type="Button">
         <Parent guid="guidForceCleanSolutionCommandPackageCmdSet" id="MyMenuGroup" />
-        <Icon guid="guidImages" id="bmpPic1" />
         <Strings>
-          <ButtonText>Invoke ForceCleanSolutionCommand</ButtonText>
+          <ButtonText>Force clean solution</ButtonText>
         </Strings>
       </Button>
     </Buttons>
