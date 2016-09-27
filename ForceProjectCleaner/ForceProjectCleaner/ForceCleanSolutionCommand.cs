@@ -6,11 +6,9 @@
 
 using System;
 using System.ComponentModel.Design;
-using System.Globalization;
 using System.IO;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
 
 namespace ForceProjectCleaner
 {
@@ -32,7 +30,9 @@ namespace ForceProjectCleaner
         /// <summary>
         /// VS Package that provides this command, not null.
         /// </summary>
-        private readonly Package package;
+        private readonly Package _package;
+
+        private readonly MenuCommand _menuItem;
 
         private OutputWindow _outputWindow;
         /// <summary>
@@ -44,17 +44,17 @@ namespace ForceProjectCleaner
         {
             if (package == null)
             {
-                throw new ArgumentNullException("package");
+                throw new ArgumentNullException(nameof(package));
             }
 
-            this.package = package;
+            _package = package;
 
-            OleMenuCommandService commandService = this.ServiceProvider.GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
+            OleMenuCommandService commandService = ServiceProvider.GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
             if (commandService != null)
             {
-                var menuCommandID = new CommandID(CommandSet, CommandId);
-                var menuItem = new MenuCommand(this.MenuItemCallback, menuCommandID);
-                commandService.AddCommand(menuItem);
+                var menuCommandId = new CommandID(CommandSet, CommandId);
+                _menuItem = new MenuCommand(MenuItemCallback, menuCommandId);
+                commandService.AddCommand(_menuItem);
             }
         }
 
@@ -70,12 +70,18 @@ namespace ForceProjectCleaner
         /// <summary>
         /// Gets the service provider from the owner package.
         /// </summary>
-        private IServiceProvider ServiceProvider
+        private IServiceProvider ServiceProvider => _package;
+
+        public bool Visible
         {
-            get
-            {
-                return this.package;
-            }
+            get { return _menuItem.Visible; }
+            set { _menuItem.Visible = value; }
+        }
+
+        public bool Enabled
+        {
+            get { return _menuItem.Enabled; }
+            set { _menuItem.Enabled = value; }
         }
 
         /// <summary>
@@ -98,7 +104,7 @@ namespace ForceProjectCleaner
         {
             try
             {
-                var dte = (EnvDTE.DTE)Package.GetGlobalService(typeof(EnvDTE.DTE));
+                var dte = (DTE) Package.GetGlobalService(typeof(DTE));
                 var solution = dte.Solution;
                 for (int i = 0; i < solution.Projects.Count; i++)
                 {
@@ -113,6 +119,10 @@ namespace ForceProjectCleaner
                         ForceDeleteDirectory(Path.Combine(projectDirectory.FullName, "obj"));
                     }
                 }
+            }
+            catch (NotImplementedException)
+            {
+                // 開かれていないとき発生する？
             }
             catch (Exception ex)
             {
@@ -145,8 +155,8 @@ namespace ForceProjectCleaner
         {
             if (_outputWindow == null)
             {
-                var dte = (EnvDTE.DTE)Package.GetGlobalService(typeof(EnvDTE.DTE));
-                Window window = dte.Windows.Item(EnvDTE.Constants.vsWindowKindOutput);
+                var dte = (DTE)Package.GetGlobalService(typeof(DTE));
+                Window window = dte.Windows.Item(Constants.vsWindowKindOutput);
                 _outputWindow = (OutputWindow)window.Object;
             }
             _outputWindow.ActivePane.Activate();

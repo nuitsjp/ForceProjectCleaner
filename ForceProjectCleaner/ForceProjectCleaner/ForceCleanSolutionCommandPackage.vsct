@@ -54,6 +54,8 @@
           If you do not want an image next to your command, remove the Icon node /> -->
       <Button guid="guidForceCleanSolutionCommandPackageCmdSet" id="ForceCleanSolutionCommandId" priority="0x0010" type="Button">
         <Parent guid="guidForceCleanSolutionCommandPackageCmdSet" id="MyMenuGroup" />
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <CommandFlag>DefaultInvisible</CommandFlag>
         <Strings>
           <ButtonText>Force Clean Solution</ButtonText>
         </Strings>

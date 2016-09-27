@@ -67,6 +67,7 @@
       <ResourceName>Menus.ctmenu</ResourceName>
     </VSCTCompile>
     <Content Include="index.html" />
+    <Content Include="readme.txt" />
     <Content Include="Resources\ForceCleanSolutionCommand.png" />
     <Content Include="Resources\ForceCleanSolutionCommandPackage.ico" />
     <Content Include="stylesheet.css" />

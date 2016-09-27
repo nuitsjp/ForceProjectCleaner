@@ -4,17 +4,11 @@
 // </copyright>
 //------------------------------------------------------------------------------
 
-using System;
-using System.ComponentModel.Design;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Runtime.InteropServices;
-using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.OLE.Interop;
+using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.Win32;
 
 namespace ForceProjectCleaner
 {
@@ -38,7 +32,8 @@ namespace ForceProjectCleaner
     [PackageRegistration(UseManagedResourcesOnly = true)]
     [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)] // Info on this package for Help/About
     [ProvideMenuResource("Menus.ctmenu", 1)]
-    [Guid(ForceCleanSolutionCommandPackage.PackageGuidString)]
+    [Guid(PackageGuidString)]
+    [ProvideAutoLoad(UIContextGuids80.SolutionExists)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
     public sealed class ForceCleanSolutionCommandPackage : Package
     {
@@ -59,7 +54,8 @@ namespace ForceProjectCleaner
         }
 
         #region Package Members
-
+        private DTE _dte;
+        private SolutionEvents _solutionEvents;
         /// <summary>
         /// Initialization of the package; this method is called right after the package is sited, so this is the place
         /// where you can put all the initialization code that rely on services provided by VisualStudio.
@@ -67,6 +63,26 @@ namespace ForceProjectCleaner
         protected override void Initialize()
         {
             ForceCleanSolutionCommand.Initialize(this);
+            _dte = GetService(typeof(SDTE)) as DTE;
+            // ReSharper disable once PossibleNullReferenceException
+            _solutionEvents = _dte.Events.SolutionEvents;
+            _solutionEvents.Opened += () =>
+            {
+                ForceCleanSolutionCommand.Instance.Visible = true;
+            };
+            _solutionEvents.BeforeClosing += () =>
+            {
+                ForceCleanSolutionCommand.Instance.Visible = false;
+            };
+            var buildEvents = _dte.Events.BuildEvents;
+            buildEvents.OnBuildBegin += (scope, action) =>
+            {
+                ForceCleanSolutionCommand.Instance.Enabled = false;
+            };
+            buildEvents.OnBuildDone += (scope, action) =>
+            {
+                ForceCleanSolutionCommand.Instance.Enabled = true;
+            };
             base.Initialize();
         }
 
