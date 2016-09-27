@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="ForceProjectCleaner.Atsushi Nakamura.52dba42e-e758-4e8e-8123-418b4016b631" Version="0.2" Language="en-US" Publisher="Atsushi Nakamura" />
+    <Identity Id="ForceProjectCleaner.Atsushi Nakamura.52dba42e-e758-4e8e-8123-418b4016b631" Version="0.3" Language="en-US" Publisher="Atsushi Nakamura" />
     <DisplayName>Force Project Cleaner Addin</DisplayName>
     <Description xml:space="preserve">Add-in to forcibly clean the Visual Studio project</Description>
     <MoreInfo>https://github.com/nuitsjp/ForceProjectCleaner</MoreInfo>
