@@ -4,6 +4,7 @@
 // </copyright>
 //------------------------------------------------------------------------------
 
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using EnvDTE;
@@ -43,6 +44,11 @@ namespace ForceProjectCleaner
         public const string PackageGuidString = "f70d5081-faaf-4ad5-9584-795b700e0c5d";
 
         /// <summary>
+        /// Command menu group (command set GUID).
+        /// </summary>
+        public static readonly Guid CommandSet = new Guid("8ee22e1b-61fb-42b7-93eb-010d9630bc37");
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ForceCleanSolutionCommand"/> class.
         /// </summary>
         public ForceCleanSolutionCommandPackage()
@@ -63,25 +69,30 @@ namespace ForceProjectCleaner
         protected override void Initialize()
         {
             ForceCleanSolutionCommand.Initialize(this);
+            DeletePackagesDirectoryCommand.Initialize(this);
             _dte = GetService(typeof(SDTE)) as DTE;
             // ReSharper disable once PossibleNullReferenceException
             _solutionEvents = _dte.Events.SolutionEvents;
             _solutionEvents.Opened += () =>
             {
                 ForceCleanSolutionCommand.Instance.Visible = true;
+                DeletePackagesDirectoryCommand.Instance.Visible = true;
             };
             _solutionEvents.BeforeClosing += () =>
             {
                 ForceCleanSolutionCommand.Instance.Visible = false;
+                DeletePackagesDirectoryCommand.Instance.Visible = false;
             };
             var buildEvents = _dte.Events.BuildEvents;
             buildEvents.OnBuildBegin += (scope, action) =>
             {
                 ForceCleanSolutionCommand.Instance.Enabled = false;
+                DeletePackagesDirectoryCommand.Instance.Enabled = false;
             };
             buildEvents.OnBuildDone += (scope, action) =>
             {
                 ForceCleanSolutionCommand.Instance.Enabled = true;
+                DeletePackagesDirectoryCommand.Instance.Enabled = true;
             };
             base.Initialize();
         }

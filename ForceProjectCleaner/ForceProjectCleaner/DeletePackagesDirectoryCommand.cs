@@ -1,26 +1,28 @@
 ﻿//------------------------------------------------------------------------------
-// <copyright file="ForceCleanSolutionCommand.cs" company="Company">
+// <copyright file="DeletePackagesDirectoryCommand.cs" company="Company">
 //     Copyright (c) Company.  All rights reserved.
 // </copyright>
 //------------------------------------------------------------------------------
 
 using System;
 using System.ComponentModel.Design;
+using System.Globalization;
 using System.IO;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 
 namespace ForceProjectCleaner
 {
     /// <summary>
     /// Command handler
     /// </summary>
-    internal sealed class ForceCleanSolutionCommand
+    internal sealed class DeletePackagesDirectoryCommand
     {
         /// <summary>
         /// Command ID.
         /// </summary>
-        public const int CommandId = 0x0100;
+        public const int CommandId = 0x200;
 
         /// <summary>
         /// VS Package that provides this command, not null.
@@ -31,11 +33,11 @@ namespace ForceProjectCleaner
 
         private OutputWindow _outputWindow;
         /// <summary>
-        /// Initializes a new instance of the <see cref="ForceCleanSolutionCommand"/> class.
+        /// Initializes a new instance of the <see cref="DeletePackagesDirectoryCommand"/> class.
         /// Adds our command handlers for menu (commands must exist in the command table file)
         /// </summary>
         /// <param name="package">Owner package, not null.</param>
-        private ForceCleanSolutionCommand(Package package)
+        private DeletePackagesDirectoryCommand(Package package)
         {
             if (package == null)
             {
@@ -44,11 +46,11 @@ namespace ForceProjectCleaner
 
             _package = package;
 
-            OleMenuCommandService commandService = ServiceProvider.GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
+            OleMenuCommandService commandService = this.ServiceProvider.GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
             if (commandService != null)
             {
-                var menuCommandId = new CommandID(ForceCleanSolutionCommandPackage.CommandSet, CommandId);
-                _menuItem = new MenuCommand(MenuItemCallback, menuCommandId);
+                var menuCommandID = new CommandID(ForceCleanSolutionCommandPackage.CommandSet, CommandId);
+                _menuItem = new MenuCommand(MenuItemCallback, menuCommandID);
                 commandService.AddCommand(_menuItem);
             }
         }
@@ -56,7 +58,7 @@ namespace ForceProjectCleaner
         /// <summary>
         /// Gets the instance of the command.
         /// </summary>
-        public static ForceCleanSolutionCommand Instance
+        public static DeletePackagesDirectoryCommand Instance
         {
             get;
             private set;
@@ -85,7 +87,7 @@ namespace ForceProjectCleaner
         /// <param name="package">Owner package, not null.</param>
         public static void Initialize(Package package)
         {
-            Instance = new ForceCleanSolutionCommand(package);
+            Instance = new DeletePackagesDirectoryCommand(package);
         }
 
         /// <summary>
@@ -99,21 +101,13 @@ namespace ForceProjectCleaner
         {
             try
             {
-                var dte = (DTE) Package.GetGlobalService(typeof(DTE));
+                var dte = (DTE)Package.GetGlobalService(typeof(DTE));
                 var solution = dte.Solution;
-                for (int i = 0; i < solution.Projects.Count; i++)
-                {
-                    var project = solution.Projects.Item(i + 1);
-                    Logger.Instance.WriteLog($"Project Name:{project.Name} FullName:{project.FullName}");
-                    if (!string.IsNullOrWhiteSpace(project.FullName))
-                    {
-                        var projectFile = new FileInfo(project.FullName);
-                        var projectDirectory = projectFile.Directory;
-                        // ReSharper disable once PossibleNullReferenceException
-                        DirectoryDeleter.ForceDeleteDirectory(Path.Combine(projectDirectory.FullName, "bin"));
-                        DirectoryDeleter.ForceDeleteDirectory(Path.Combine(projectDirectory.FullName, "obj"));
-                    }
-                }
+                Logger.Instance.WriteLog($"Solution FullName:{solution.FullName}");
+                var solutionFile = new FileInfo(solution.FullName);
+                var solutionDirectory = solutionFile.Directory;
+                // ReSharper disable once PossibleNullReferenceException
+                DirectoryDeleter.ForceDeleteDirectory(Path.Combine(solutionDirectory.FullName, "packages"));
             }
             catch (NotImplementedException)
             {
